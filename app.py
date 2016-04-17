@@ -2,13 +2,13 @@
 from flask import Flask, render_template, Response,redirect,request
 
 # emulated camera
-from camera import Camera
+#from camera import Camera
 
 # Raspberry Pi camera module (requires picamera package)
-#from camera_pi import Camera
+from camera_pi import Camera
 
 import serial
-# ser=serial.Serial('/dev/ttyACM0',9600)
+ser=serial.Serial('/dev/ttyACM0',9600)
 
 
 app = Flask(__name__)
@@ -24,7 +24,7 @@ def index():
 def motion():
 	#serial motion
 	cmd = request.args.get('cmd')
-    # ser.write(request.query_string)
+	ser.write(cmd)
 	return redirect('/')
 
 def gen(camera):
