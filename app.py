@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-from flask import Flask, render_template, Response
+from flask import Flask, render_template, Response,redirect
 
 # emulated camera
 from camera import Camera
@@ -15,6 +15,10 @@ def index():
     """Video streaming home page."""
     return render_template('index.html')
 
+@app.route('/turn_right/')
+def turn_right():
+	#serial motion
+	return redirect('/')
 
 def gen(camera):
     """Video streaming generator function."""
