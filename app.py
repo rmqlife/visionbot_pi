@@ -2,13 +2,13 @@
 from flask import Flask, render_template, Response,redirect,request
 
 # emulated camera
-#from camera import Camera
+from camera import Camera
 
 # Raspberry Pi camera module (requires picamera package)
-from camera_pi import Camera
+#from camera_pi import Camera
 
 import serial
-ser=serial.Serial('/dev/ttyACM0',9600)
+# ser=serial.Serial('/dev/ttyACM0',9600)
 
 
 app = Flask(__name__)
@@ -20,10 +20,11 @@ def index():
     """Video streaming home page."""
     return render_template('index.html')
 
-@app.route('/motion/')
-def turn_right():
+@app.route('/motion/',methods=['POST','GET'])
+def motion():
 	#serial motion
-    ser.write(request.query_string)
+	cmd = request.args.get('cmd')
+    # ser.write(request.query_string)
 	return redirect('/')
 
 def gen(camera):
