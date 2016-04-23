@@ -7,13 +7,13 @@ from flask import Flask, render_template, Response,redirect,request
 # Raspberry Pi camera module (requires picamera package)
 from camera_pi import Camera
 
-import serial
-ser=serial.Serial('/dev/ttyACM0',9600)
-
-
 app = Flask(__name__)
 
-
+import bluetooth
+addr='30:14:11:17:21:57'
+port=1
+sock=bluetooth.BluetoothSocket(bluetooth.RFCOMM)
+sock.connect((addr,port))
 
 @app.route('/')
 def index():
@@ -22,10 +22,9 @@ def index():
 
 @app.route('/motion/',methods=['POST','GET'])
 def motion():
-	#serial motion
-	cmd = request.args.get('cmd')
-	ser.write(cmd)
-	return redirect('/')
+    cmd = request.args.get('cmd')
+    sock.send(cmd+"\n")
+    return redirect('/')
 
 def gen(camera):
     """Video streaming generator function."""
@@ -43,4 +42,4 @@ def video_feed():
 
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', debug=True, threaded=True)
+    app.run(host='0.0.0.0', debug=True, use_reloader=False, threaded=True)
