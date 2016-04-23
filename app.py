@@ -2,18 +2,18 @@
 from flask import Flask, render_template, Response,redirect,request,send_file
 
 # emulated camera
-from camera import Camera
+# from camera import Camera
 
 # Raspberry Pi camera module (requires picamera package)
-# from camera_pi import Camera
+from camera_pi import Camera
 
 app = Flask(__name__)
 
-# import bluetooth
-# addr='30:14:11:17:21:57'
-# port=1
-# sock=bluetooth.BluetoothSocket(bluetooth.RFCOMM)
-# sock.connect((addr,port))
+import bluetooth
+addr='30:14:11:17:21:57'
+port=1
+sock=bluetooth.BluetoothSocket(bluetooth.RFCOMM)
+sock.connect((addr,port))
 
 @app.route('/')
 def index():
