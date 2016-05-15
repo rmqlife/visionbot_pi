@@ -7,15 +7,15 @@
     <img src="{{ url_for('video_feed') }}">
   	<p><h2>
   <li><a href="{{ url_for('capture') }}">capture</a></li>
-	<li><a href="{{ url_for('motion',cmd='R') }}">RIGHT</a></li>
-	<li><a href="{{ url_for('motion',cmd='L') }}">LEFT</a></li>
+	<li><a href="{{ url_for('motion',cmd='r') }}">RIGHT</a></li>
+	<li><a href="{{ url_for('motion',cmd='l') }}">LEFT</a></li>
   <li><a href="{{ url_for('motion',cmd='f') }}">FORE</a></li>
   <li><a href="{{ url_for('motion',cmd='q') }}">STOP</a></li>
   <li><a href="{{ url_for('motion',cmd='b') }}">BACK</a></li>
-  <li><a href="{{ url_for('motion',cmd='1') }}">camera up</a></li>
-  <li><a href="{{ url_for('motion',cmd='2') }}">camera down</a></li>
-  <li><a href="{{ url_for('motion',cmd='3') }}">camera right</a></li>
-  <li><a href="{{ url_for('motion',cmd='4') }}">camera left</a></li>
+  <li><a href="{{ url_for('motion',cmd='U') }}">camera up</a></li>
+  <li><a href="{{ url_for('motion',cmd='D') }}">camera down</a></li>
+  <li><a href="{{ url_for('motion',cmd='R') }}">camera right</a></li>
+  <li><a href="{{ url_for('motion',cmd='L') }}">camera left</a></li>
 	</h2>
   </body>
 </html>

@@ -9,8 +9,12 @@ from camera_pi import Camera
 
 app = Flask(__name__)
 
+# connect to bluetooth
 import bluetooth
-addr='30:14:11:17:21:57'
+# read bluetooth address in config file
+with open("bluetooth/addr",'r') as bt_addr:
+    addr=bt_addr.readline().strip()
+
 port=1
 sock=bluetooth.BluetoothSocket(bluetooth.RFCOMM)
 sock.connect((addr,port))
