@@ -46,15 +46,15 @@ def video_feed():
     """Video streaming route. Put this in the src attribute of an img tag."""
     return Response(gen(Camera()),
                     mimetype='multipart/x-mixed-replace; boundary=frame')
-
+    
 @app.route('/capture')
 def capture():
     frame=Camera().get_frame()
-    filename="test.jpg"
-    file=open(filename,'w')
-    file.write(frame)
-    file.close()
-    return send_file(filename)
+    return Response(frame, mimetype='image')
+
+@app.route('/still')
+def still():
+    return render_template('still.html')
 
 if __name__ == '__main__':
     sock = bt_init()
