@@ -12,7 +12,7 @@ app = Flask(__name__)
 # connect to bluetooth
 import bluetooth
 # read bluetooth address in config file
-with open("bluetooth/addr",'r') as bt_addr:
+with open("bluetooth_addr",'r') as bt_addr:
     addr=bt_addr.readline().strip()
 
 port=1
