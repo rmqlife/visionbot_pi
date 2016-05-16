@@ -6,22 +6,26 @@ from flask import Flask, render_template, Response,redirect,request,send_file
 
 # Raspberry Pi camera module (requires picamera package)
 from camera_pi import Camera
+import bluetooth
 
 app = Flask(__name__)
+bt_sock = None
 
-# connect to bluetooth
-import bluetooth
-# read bluetooth address in config file
-with open("bluetooth_addr",'r') as bt_addr:
-    addr=bt_addr.readline().strip()
+def bt_init():
+    """ initialize bluetooth connect"""
+    # connect to bluetooth
 
-port=1
-sock=bluetooth.BluetoothSocket(bluetooth.RFCOMM)
-sock.connect((addr,port))
+    # read bluetooth address in config file
+    with open("bluetooth_addr",'r') as bt_addr:
+        addr = bt_addr.readline().strip()
+    port = 1
+    sock = bluetooth.BluetoothSocket(bluetooth.RFCOMM)
+    sock.connect((addr,port))
+    return sock
 
 @app.route('/')
 def index():
-    """Video streaming home page."""
+    """home page."""
     return render_template('index.html')
 
 @app.route('/motion/',methods=['POST','GET'])
@@ -36,7 +40,6 @@ def gen(camera):
         frame = camera.get_frame()
         yield (b'--frame\r\n'
                b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')
-
 
 @app.route('/video_feed')
 def video_feed():
@@ -54,4 +57,5 @@ def capture():
     return send_file(filename)
 
 if __name__ == '__main__':
+    sock = bt_init()
     app.run(host='0.0.0.0', debug=True, use_reloader=False, threaded=True)
