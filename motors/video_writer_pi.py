@@ -19,7 +19,7 @@ class VideoStream:
         self.rawCapture = PiRGBArray(self.camera, size=self.camera.resolution)
         # codec
         fourcc = cv2.VideoWriter_fourcc(*'XVID')
-        self.writer  = cv2.VideoWriter('output.avi', fourcc, float(self.camera.framerate), self.camera.resolution)
+        self.writer  = cv2.VideoWriter('data/output.avi', fourcc, float(self.camera.framerate), self.camera.resolution)
         # allow the camera to warmup
         time.sleep(0.1)
         pass
@@ -55,12 +55,11 @@ class VideoStream:
             
 if __name__ == "__main__":
     vs = VideoStream()
-    thread_vs = Thread(target = vs.record, args = (100,))
+    thread_vs = Thread(target = vs.record, args = (20,))
     thread_vs.start()
     # start to control camera's movements
     import motors
     m = motors.Motors()
     m.arm_scan()
-
     vs.terminate()
     

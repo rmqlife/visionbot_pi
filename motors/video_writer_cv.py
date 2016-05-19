@@ -11,14 +11,12 @@ def write(length=5):
     while(cap.isOpened()):
         ret, frame = cap.read()
         if ret:
-            # flip the frame
-            frame = cv2.flip(frame,0)
             out.write(frame)
             # show
             cv2.imshow('frame', frame)
             cv2.waitKey(1)
             
-        if time.time() - tic > 5:
+        if time.time() - tic > length:
             break    
     cap.release()
     out.release()

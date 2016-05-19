@@ -12,14 +12,32 @@ class Motors:
         port  = 1
         self.sock = bluetooth.BluetoothSocket(bluetooth.RFCOMM)
         self.sock.connect((addr,port))
-    
-    def arm_scan():
-        for v in range(90,180,20):
-            sock.send("V"+chr(v)+'\n')
-            for h in range(0,180,20):
-                sock.send('H'+chr(h)+'\n')
-                time.sleep(0.2)
+        
+        # generate arm scan path
+        import arm_router
+        nodes = arm_router.gen_nodes(range(0,180,20),range(0,180,30))
+        self.arm_path = arm_router.greedy_path((90,90),nodes)
+        self.arm_path.append((90,90))
+        
+        self.arm_iter = iter(self.arm_path)
+        
+    def arm_scan(self):        
+        while self.arm_scan_loop():
+            pass
+            
+        return 0
 
-        sock.send('H'+chr(90))
-        sock.send('V'+chr(90))
+    def arm_move(self,node):
+        (h,v) = node
+        self.sock.send("V"+chr(v)+'\n')
+        self.sock.send('H'+chr(h)+'\n')
+        time.sleep(0.2)
     
+    def arm_scan_loop(self):
+        node = next(self.arm_iter, None)
+        if node==None:
+            return False
+        else:
+            self.arm_move(node)
+            return True
+        
