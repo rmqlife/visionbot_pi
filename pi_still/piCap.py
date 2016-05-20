@@ -24,6 +24,11 @@ class VideoStream:
         self.writer  = cv2.VideoWriter(path , fourcc, float(self.camera.framerate), self.camera.resolution)
         # allow the camera to warmup
         time.sleep(0.1)
+        
+        # init motors
+        from motors import Motors
+        self.motors = Motors()
+
         pass
    
     # setting the camera     
@@ -40,16 +45,19 @@ class VideoStream:
         tic = time.time()
         # capture frames from the camera
         for frame in self.camera.capture_continuous(self.rawCapture, format="bgr", use_video_port=True):
-	        image = frame.array
-	        self.writer.write(image)
-	        # clear the stream in preparation for the next frame
-	        self.rawCapture.truncate(0)
-	        
-	        if (time.time() - tic > length) or (not self._running):
-	            break
-	    # release the writer
+            image = frame.array
+            self.writer.write(image)
+            motor_ret = self.motors.arm_scan_loop()
+            # need to stop        
+            if (time.time() - tic > length) or (not self._running) or (not motor_ret):
+                break
+            time.sleep(0.2)
+            # clear the stream in preparation for the next frame
+            self.rawCapture.truncate(0)
+            
+        # release the writer
         self.writer.release()
-	    
+        
     def terminate(self):    
         self._running = False
         pass
@@ -59,13 +67,7 @@ if __name__ == "__main__":
     vs = VideoStream()
     thread_vs = Thread(target = vs.record, args = (20,))
     # init motors, establish bluetooth
-    import motors
-    m = motors.Motors()
     thread_vs.start()
-    tic = time.time()
-    # start to control camera's movements
-    while m.arm_scan_loop():
-        time.sleep(0.5) 
-    vs.terminate()
-    print time.time()-tic
+
+    thread_vs.join()
     
