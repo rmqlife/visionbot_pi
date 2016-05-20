@@ -5,17 +5,16 @@ import time
 import bluetooth
 
 class Motors:
-    def __init__(self, ):
+    def __init__(self):
         # initial with addr file
         with open("addr",'r') as faddr:
             addr = faddr.readline().strip()
         port  = 1
         self.sock = bluetooth.BluetoothSocket(bluetooth.RFCOMM)
         self.sock.connect((addr,port))
-        
+        self.arm_scan_init()
      
-    def arm_scan_init(self, hlist = range(0,180,30), vlist = range(60,130,30)):
-            
+    def arm_scan_init(self, hlist = range(0,180,30), vlist = range(60,130,30)):            
         # generate arm scan path
         import arm_router
         nodes = arm_router.gen_nodes(hlist, vlist)
@@ -27,6 +26,7 @@ class Motors:
             
     def arm_scan(self):        
         while self.arm_scan_loop():
+            time.sleep(0.5)
             pass
             
         return 0

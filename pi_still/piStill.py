@@ -54,6 +54,3 @@ if __name__ == "__main__":
         if r != None:
             h,v = r
             break
-    
-            
-        
