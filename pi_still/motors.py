@@ -26,7 +26,7 @@ class Motors:
             
     def arm_scan(self):        
         while self.arm_scan_loop():
-            time.sleep(0.5)
+            time.sleep(0.4)
             pass
             
         return 0

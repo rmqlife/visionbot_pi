@@ -64,7 +64,8 @@ if __name__ == "__main__":
     thread_vs.start()
     tic = time.time()
     # start to control camera's movements
-    m.arm_scan()
+    while m.arm_scan_loop():
+        time.sleep(0.5) 
     vs.terminate()
     print time.time()-tic
     

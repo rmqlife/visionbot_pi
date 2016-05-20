@@ -43,14 +43,11 @@ if __name__ == "__main__":
     import motors
     m = motors.Motors()
     m.arm_scan_init(hlist = range(0,180,30), vlist = range(60,130,30))
-
+    tic = time.time()
     num = 0
     while m.arm_scan_loop():
         time.sleep(0.15)
         img = cap.imread()
         cv2.imwrite("result/"+str(num)+".jpg", img)
         num += 1    
-        r = findmarker(img)
-        if r != None:
-            h,v = r
-            break
+    print "duration:", time.time() - tic
