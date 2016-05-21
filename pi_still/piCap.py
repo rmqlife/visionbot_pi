@@ -12,23 +12,14 @@ from threading import Thread
 
 
 class VideoStream:
-    def __init__(self, path = 'result/output.avi'):
+    def __init__(self):
         # the flag of the thread running
         self._running = True
         # init the camera
         self.camera = self.camera_init()
         # initialize the camera and grab a reference to the raw camera capture
         self.rawCapture = PiRGBArray(self.camera, size=self.camera.resolution)
-        # codec
-        fourcc = cv2.VideoWriter_fourcc(*'XVID')
-        self.writer  = cv2.VideoWriter(path , fourcc, float(self.camera.framerate), self.camera.resolution)
-        # allow the camera to warmup
-        time.sleep(0.1)
         
-        # init motors
-        from motors import Motors
-        self.motors = Motors()
-
         pass
    
     # setting the camera     
@@ -41,33 +32,42 @@ class VideoStream:
         return camera
         
         
-    def record(self, length = 100):
+    def record(self, movefunc, path = 'result/output.avi', timeout = 100):
+        # init the file recording file
+        # codec
+        fourcc = cv2.VideoWriter_fourcc(*'XVID')
+        self.writer  = cv2.VideoWriter(path , fourcc, float(self.camera.framerate), self.camera.resolution)
+        
         tic = time.time()
         # capture frames from the camera
         for frame in self.camera.capture_continuous(self.rawCapture, format="bgr", use_video_port=True):
             image = frame.array
             self.writer.write(image)
-            motor_ret = self.motors.arm_scan_loop()
-            # need to stop        
-            if (time.time() - tic > length) or (not self._running) or (not motor_ret):
-                break
+            movefunc_ret = movefunc()
             time.sleep(0.3)
             # clear the stream in preparation for the next frame
             self.rawCapture.truncate(0)
-            
+            # need to stop
+            if (time.time() - tic > timeout) or (not self._running) or (not movefunc_ret):
+                break
+
         # release the writer
         self.writer.release()
         
     def terminate(self):    
         self._running = False
         pass
-    
+
             
 if __name__ == "__main__":
-    vs = VideoStream()
-    thread_vs = Thread(target = vs.record, args = (20,))
+    # init video recording
+    video = VideoStream()
     # init motors, establish bluetooth
-    thread_vs.start()
+    from motors import Motors
+    motors = Motors()
 
-    thread_vs.join()
-    
+    motors.arm_scan_init()
+    # start to recording
+    video.record(motors.arm_scan_loop,'result/scan1.avi')
+    motors.arm_scan_init()
+    video.record(motors.arm_scan_loop,'result/scan2.avi')
