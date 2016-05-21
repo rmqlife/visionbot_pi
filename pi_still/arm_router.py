@@ -13,8 +13,11 @@ class Graph:
         self.edges[to_node].append(from_node)
         self.distances[(from_node, to_node)] = distance
     
-def distance(a, b):
-    return ((a[0]-b[0])**2 + (a[1]-b[1]) **2) **0.5
+def distance(a, b, measure = "simple"):
+    if measure == "simple":   
+        return ((a[0]-b[0])**2 + (a[1]-b[1]) **2) **0.5
+    elif measure == "horizon":    
+        return abs(a[0]-b[0]) +  abs(a[1]-b[1])*100
 
 def gen_nodes(hlist,vlist):
     ps = set()
@@ -28,7 +31,7 @@ def nearest(target_node,nodes):
     nearest_node = None
     min_dist = 10000
     for node in nodes:
-        d = distance(node,target_node)
+        d = distance(node,target_node,"horizon")
         if d<min_dist:
             min_dist = d
             nearest_node = node

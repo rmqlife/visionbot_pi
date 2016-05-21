@@ -51,7 +51,7 @@ class VideoStream:
             # need to stop        
             if (time.time() - tic > length) or (not self._running) or (not motor_ret):
                 break
-            time.sleep(0.2)
+            time.sleep(0.3)
             # clear the stream in preparation for the next frame
             self.rawCapture.truncate(0)
             
