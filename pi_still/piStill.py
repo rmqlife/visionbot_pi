@@ -25,7 +25,8 @@ class PiStill:
 
 def findmarker(img):
     import marker  
-    import movement  
+    import movement
+    import numpy as np  
     mlist = marker.marker().find(img,debug = 0, show = 0)
     if (len(mlist)>0):
         num,pos = mlist[0]

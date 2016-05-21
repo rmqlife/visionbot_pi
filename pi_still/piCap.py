@@ -2,72 +2,60 @@
 #  http://www.pyimagesearch.com/2015/03/30/accessing-the-raspberry-pi-camera-with-opencv-and-python/
 # http://raspi.tv/2013/another-way-to-convert-raspberry-pi-camera-h264-output-to-mp4 
 
-import cv2
-import time
-
-from picamera.array import PiRGBArray
-import picamera
-
-from threading import Thread
+import numpy as np
+from marker import marker
+from motors import Motors
+from videostream import VideoStream
+import movement
 
 
-class VideoStream:
-    def __init__(self):
-        # the flag of the thread running
-        self._running = True
-        # init the camera
-        self.camera = self.camera_init()
-        # initialize the camera and grab a reference to the raw camera capture
-        self.rawCapture = PiRGBArray(self.camera, size=self.camera.resolution)
+# init motors, establish bluetooth
+motors = Motors()
+# init video recording
+video = VideoStream()
+
+def findmarker(img):
+    mlist = marker().find(img,debug = 0, show = 0)
+    if (len(mlist)>0):
+        return 2 # find marker
+ 
+    # if scan if ending, return True
+    if motors.arm_scan_loop():
+        return 1
+    else: # not the end
+        return 0
+
+def barescan(img):
+    return motors.arm_scan_loop()
+    
+def aimmarker(img):
+    mlist = marker().find(img,debug = 0, show = 0)
+    if (len(mlist)==1):
+        num,pos = mlist[0]
+        center = tuple(np.int0( np.mean(pos.reshape(4,2), axis = 0)))
+        img_center = tuple(img.shape[:2])
+        img_center = (img_center[1]/2,img_center[0]/2)
+        h, v = movement.move2obj(center, img_center)
+        print h,v
         
-        pass
-   
-    # setting the camera     
-    def camera_init(self):
-        camera = picamera.PiCamera()    
-        camera.hflip = True
-        camera.vflip = True
-        #camera.resolution = (640, 480)
-        #camera.framerate = 10        
-        return camera
+        T = 0.05
         
-        
-    def record(self, movefunc, path = 'result/output.avi', timeout = 100):
-        # init the file recording file
-        # codec
-        fourcc = cv2.VideoWriter_fourcc(*'XVID')
-        self.writer  = cv2.VideoWriter(path , fourcc, float(self.camera.framerate), self.camera.resolution)
-        
-        tic = time.time()
-        # capture frames from the camera
-        for frame in self.camera.capture_continuous(self.rawCapture, format="bgr", use_video_port=True):
-            image = frame.array
-            self.writer.write(image)
-            movefunc_ret = movefunc()
-            time.sleep(0.3)
-            # clear the stream in preparation for the next frame
-            self.rawCapture.truncate(0)
-            # need to stop
-            if (time.time() - tic > timeout) or (not self._running) or (not movefunc_ret):
-                break
+        if abs(h)<T: # and abs(v)<0.1:
+            return 2 # aim at it 
+        import math
+        if abs(h)>T:
+            motors.arm_move((motors.status[0]+int(h*10), motors.status[1]))
+        if abs(v)>T:
+            motors.arm_move((motors.status[0], motors.status[1]+int(v*10)) )
+        return 0
+    return 0
+    #return 1 # end not find
 
-        # release the writer
-        self.writer.release()
-        
-    def terminate(self):    
-        self._running = False
-        pass
 
-            
 if __name__ == "__main__":
-    # init video recording
-    video = VideoStream()
-    # init motors, establish bluetooth
-    from motors import Motors
-    motors = Motors()
-
     motors.arm_scan_init()
     # start to recording
-    video.record(motors.arm_scan_loop,'result/scan1.avi')
-    motors.arm_scan_init()
-    video.record(motors.arm_scan_loop,'result/scan2.avi')
+    ret = video.record(findmarker, path = 'result/findmarker.avi')
+    if ret==2: # yes, find the marker
+        print video.record(aimmarker, path = 'result/aim.avi', timeout = 20)
+        
