@@ -24,20 +24,21 @@ class Motors:
         self.arm_iter = iter(self.arm_path)
         # start with
         self.arm_status = (90,90)   
-            
-    def arm_scan(self): 
-        self.arm_scan_init()       
-        while self.arm_scan_loop():
-            time.sleep(0.4)
-            pass           
-        return 0
-
+    
+    def sendCmd(self, cmd):
+        self.sock.send(chr(254)+cmd+chr(255)+'\n')
+        return 
+        
     def arm_move(self,node):
         (h,v) = node
         self.status = node
-        self.arm_status = node
-        self.sock.send("V"+chr(v)+'\n')
-        self.sock.send('H'+chr(h)+'\n')
+        self.sendCmd("A"+chr(h)+chr(v))
+    
+    def arm_move_delta(self, delta):
+        (h,v) = delta
+        self.status[0] = self.status[0] + h
+        self.status[1] = self.status[1] + v
+        sefl.arm_move(self, self.status)
     
     def arm_scan_loop(self):
         node = next(self.arm_iter, None)
@@ -48,5 +49,5 @@ class Motors:
             return False
     
     def turn(self, direction = 'r'):
-        self.sock.send(direction + '\n')
+        self.sendCmd(direction)
         

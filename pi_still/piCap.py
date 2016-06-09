@@ -11,26 +11,28 @@ import movement
 
 # init motors, establish bluetooth
 motors = Motors()
-# init video recording
-video = VideoStream()
+
+
 
 def findmarker(img):
     mlist = marker().find(img,debug = 0, show = 0)
-    if (len(mlist)>0):
+    if len(mlist)>0:
         return 2 # find marker
- 
-    # if scan if ending, return True
-    if motors.arm_scan_loop():
-        return 1
-    else: # not the end
-        return 0
+    else:
+        # if scan if ending, return True
+        if motors.arm_scan_loop():
+            return 1
+        else: # not the end
+            return 0
 
 def barescan(img):
     return motors.arm_scan_loop()
+
+def aimmarker(img): 
+    mlist = marker().find(img, debug = 0, show = 0)
     
-def aimmarker(img):
-    mlist = marker().find(img,debug = 0, show = 0)
-    if (len(mlist)==1):
+    print "aim:",mlist
+    if len(mlist)==1:
         num,pos = mlist[0]
         center = tuple(np.int0( np.mean(pos.reshape(4,2), axis = 0)))
         img_center = tuple(img.shape[:2])
@@ -38,24 +40,26 @@ def aimmarker(img):
         h, v = movement.move2obj(center, img_center)
         print h,v
         
-        T = 0.05
-        
-        if abs(h)<T: # and abs(v)<0.1:
+        T = 0.1        
+        if abs(h)<T and abs(v)<T: # and abs(v)<0.1:
             return 2 # aim at it 
         import math
-        if abs(h)>T:
-            motors.arm_move((motors.status[0]+int(h*10), motors.status[1]))
         if abs(v)>T:
-            motors.arm_move((motors.status[0], motors.status[1]+int(v*10)) )
-        return 0
+            motors.arm_move_delta(0, int(math.copysign(ceil(abs(v)*10),v)))
+            return 0
+        if abs(h)>T:
+            motors.arm_move_delta(int(math.copysign(ceil(abs(h)*10),h)), 0)
+            return 0
     return 0
-    #return 1 # end not find
 
 
 if __name__ == "__main__":
-    motors.arm_scan_init()
+    motors.arm_scan_init(hlist=range(10,170,10), vlist=range(60,120,20))
     # start to recording
-    ret = video.record(findmarker, path = 'result/findmarker.avi')
-    if ret==2: # yes, find the marker
-        print video.record(aimmarker, path = 'result/aim.avi', timeout = 20)
+    # init video recording
+    video = VideoStream()
+    ret = video.record(findmarker, path = 'result/find.avi', timeout = 30)
+    
+    #if ret==2: # yes, find the marker
+    print video.record(aimmarker, path = 'result/aim.avi', timeout = 10)
         
