@@ -3,7 +3,7 @@
 
 import time
 import bluetooth
-
+import armRouter
 class Motors:
     def __init__(self):
         # initial with addr file
@@ -16,9 +16,8 @@ class Motors:
      
     def arm_scan_init(self, hlist = range(0,180,30), vlist = range(60,130,30)):            
         # generate arm scan path
-        import arm_router
-        nodes = arm_router.gen_nodes(hlist, vlist)
-        self.arm_path = arm_router.greedy_path((90,90),nodes)
+        nodes = armRouter.gen_nodes(hlist, vlist)
+        self.arm_path = armRouter.greedy_path((90,90),nodes)
         # end with
         self.arm_path.append((90,90))
         self.arm_iter = iter(self.arm_path)
