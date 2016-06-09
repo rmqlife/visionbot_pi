@@ -6,25 +6,61 @@ import numpy as np
 from marker import marker
 from motors import Motors
 from videoStream import VideoStream
-import movement
 
-# init motors, establish bluetooth
-motors = Motors()
-
-def findmarker(img):
-    mlist = marker().find(img,debug = 0, show = 0)
-    if len(mlist)>0:
-        return 2 # find marker
-    else:
-        # if scan if ending, return True
-        motors.turn()
+class Move:
+    def __init__(self):
+        # initialize the status
+        self.dist = 1
+        self.dist_prev = 2
+        self.act_prev = 'r'
+        # init motors, establish bluetooth
+        self.motors = Motors()
+        self.motors.arm_move((90,90))
+    
+    def targetDist(self,targetCenter, imgCenter):
+        # range from 0 to 1
+        h = float(imgCenter[0]-targetCenter[0])/imgCenter[0]
+        v = float(imgCenter[1]-targetCenter[1])/imgCenter[1]
+        return h
+        
+    def findmarker(self, img):
+        # return > 0 to end finding process  
+        print self.dist
+ 
+        if abs(self.dist)>abs(self.dist_prev):
+        # the result got worse
+            if self.act_prev == 'r':
+                self.act = 'l'
+            if self.act_prev == 'l':
+                self.act = 'r'
+        if abs(self.dist)<=abs(self.dist_prev):
+        # the result got better or same, keep doing
+            self.act = self.act_prev          
+        
+        self.motors.turn(self.act)
         import time
         time.sleep(0.1)
-            
+        self.act_prev = self.act
+        self.dist_prev = self.dist
+             
+        mlist = marker().find(img, debug = 0, show = 0)
+        #default dist, which means the not found response
+           
+        if len(mlist)==1:
+            num, pos = mlist[0]
+            center = tuple(np.int0( np.mean( pos.reshape(4,2), axis = 0)))
+            img_center = tuple( img.shape[:2])
+            img_center = (img_center[1]/2, img_center[0]/2)
+            self.dist = self.targetDist(center, img_center)
+        else:
+            self.dist = 2
+        return 0  
+        
+                     
 if __name__ == "__main__":
     # start to recording
     # init video recording
-    motors.arm_move((90,90))
+    move = Move()
     video = VideoStream()
-    ret = video.record(findmarker, path = 'result/find.avi', timeout = 30)
+    ret = video.record(move.findmarker, path = 'result/find.avi', timeout = 30)
     
